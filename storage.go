@@ -1,4 +1,4 @@
-package telethon2gotd
+package telegotd
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func Storage(data *session.Data) (*session.StorageMemory, error) {
 //
 // Пример:
 //
-//	st, err := telethon2gotd.StorageFromInput(sess)
+//	st, err := telegotd.StorageFromInput(sess)
 //	if err != nil { ... }
 //	client := telegram.NewClient(appID, appHash, telegram.Options{SessionStorage: st})
 func StorageFromInput(input string) (*session.StorageMemory, error) {

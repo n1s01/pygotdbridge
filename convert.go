@@ -1,4 +1,4 @@
-// Package telethon2gotd конвертирует существующие Telethon-сессии в нативный
+// Package telegotd конвертирует существующие Telethon-сессии в нативный
 // формат gotd (github.com/gotd/td), позволяя работать аккаунтом через gotd без
 // повторной авторизации.
 //
@@ -9,7 +9,7 @@
 //
 // Основная точка входа — StorageFromInput: на вход даётся сессия, на выход —
 // готовый session.Storage для telegram.Options{SessionStorage: ...}.
-package telethon2gotd
+package telegotd
 
 import (
 	"database/sql"

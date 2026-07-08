@@ -16,7 +16,7 @@ import (
 
 	"github.com/gotd/td/telegram"
 
-	telethon2gotd "github.com/n1s01/telethon-to-gotd"
+	"github.com/n1s01/telegotd"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Мост: сессия Telethon → готовый session.Storage для gotd.
-	st, err := telethon2gotd.StorageFromInput(input)
+	st, err := telegotd.StorageFromInput(input)
 	if err != nil {
 		log.Fatalf("convert session: %v", err)
 	}

@@ -1,4 +1,4 @@
-module github.com/n1s01/telethon-to-gotd
+module github.com/n1s01/telegotd
 
 go 1.26.2
 
