@@ -72,6 +72,30 @@ _ = bridge.ToPyrogramSQLite(data, "pyrogram.session", opts)
 
 `PyrogramExport` carries fields absent from `session.Data` (`APIID`, `TestMode`, `UserID`, `IsBot`). SQLite exports overwrite the target path.
 
+## Peer cache migration
+
+Telethon (`entities`) and Pyrogram (`peers`) SQLite files store an `id → access_hash`
+table. Porting it into gotd's peer storage lets `telegram/peers` resolve users, chats,
+and channels offline — without re-resolving each one (fewer requests, less flood risk).
+
+```go
+import "github.com/gotd/td/telegram/peers"
+
+storage, n, err := bridge.MigratePeersToMemory(ctx, "account.session")
+// n = number of peers migrated
+
+mgr := peers.Options{Storage: storage}.Build(api)
+user, err := mgr.ResolveUserID(ctx, userID) // served from cache
+```
+
+| Function | Description |
+|----------|-------------|
+| `MigratePeers(ctx, input, peers.Storage) (int, error)` | Port `access_hash`es into an existing peer storage. |
+| `MigratePeersToMemory(ctx, input) (*peers.InmemoryStorage, int, error)` | Migrate into a fresh in-memory storage. |
+
+Telethon and Pyrogram both use bot-API marked IDs, so a single decoder maps them to
+gotd's `users_` / `chats_` / `channel_` keys. Phone numbers are migrated too.
+
 ## Notes
 
 - `app_id` / `app_hash` are still required for gotd's `initConnection` (the auth key is account-bound, not app-bound).
