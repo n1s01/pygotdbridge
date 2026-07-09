@@ -14,6 +14,7 @@ package gotdbridge
 import (
 	"database/sql"
 	"os"
+	"strings"
 
 	"github.com/go-faster/errors"
 	"github.com/gotd/td/crypto"
@@ -34,9 +35,66 @@ const sqliteMagic = "SQLite format 3\x00"
 // схема (Telethon/Pyrogram); иначе input трактуется как string session.
 func Convert(input string) (*session.Data, error) {
 	if isSQLiteFile(input) {
-		return FromTelethonSQLite(input)
+		return fromSQLiteAuto(input)
 	}
-	return FromTelethonString(input)
+	return fromStringAuto(input)
+}
+
+// fromSQLiteAuto различает Telethon и Pyrogram по схеме таблицы sessions:
+// у Telethon есть колонка server_address, у Pyrogram — нет.
+func fromSQLiteAuto(path string) (*session.Data, error) {
+	telethon, err := sqliteHasColumn(path, "sessions", "server_address")
+	if err != nil {
+		return nil, err
+	}
+	if telethon {
+		return FromTelethonSQLite(path)
+	}
+	return FromPyrogramSQLite(path)
+}
+
+// fromStringAuto различает строковые сессии: Telethon несёт версию-префикс '1',
+// Pyrogram — чистый base64. Если разбор как Telethon не удался, пробуем Pyrogram.
+func fromStringAuto(s string) (*session.Data, error) {
+	if strings.HasPrefix(s, "1") {
+		if data, err := FromTelethonString(s); err == nil {
+			return data, nil
+		}
+	}
+	return FromPyrogramString(s)
+}
+
+// sqliteHasColumn сообщает, есть ли в таблице заданная колонка.
+func sqliteHasColumn(path, table, column string) (bool, error) {
+	db, err := openSQLiteRO(path)
+	if err != nil {
+		return false, errors.Wrap(err, "open sqlite")
+	}
+	defer func() { _ = db.Close() }()
+
+	rows, err := db.Query("PRAGMA table_info(" + table + ")")
+	if err != nil {
+		return false, errors.Wrap(err, "table_info")
+	}
+	defer func() { _ = rows.Close() }()
+
+	for rows.Next() {
+		var (
+			cid     int
+			name    string
+			ctype   string
+			notnull int
+			dflt    sql.NullString
+			pk      int
+		)
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err != nil {
+			return false, errors.Wrap(err, "scan column")
+		}
+		if name == column {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
 }
 
 // buildData собирает session.Data из общих полей (dc_id, адрес DC, auth_key),
