@@ -1,22 +1,7 @@
-# Binaries
-/demo
-/bin/
-*.exe
-*.out
-
-# Сессии и креды сторонних библиотек — секреты, не коммитить
 *.session
 *.session-journal
 /session/
 
-# Локальный персональный пример (завязан на конкретный аккаунт)
-/cmd/sendself/
-
-# Go
-vendor/
-
-# OS / editor
+*.exe
+*.out
 .DS_Store
-*.swp
-.idea/
-.vscode/

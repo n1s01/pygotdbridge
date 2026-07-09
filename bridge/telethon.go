@@ -9,10 +9,6 @@ import (
 	"github.com/gotd/td/session"
 )
 
-// FromTelethonString декодирует Telethon StringSession в *session.Data.
-//
-// Это тонкая обёртка над session.TelethonSession: gotd уже умеет разбирать
-// строковый формат Telethon.
 func FromTelethonString(s string) (*session.Data, error) {
 	data, err := session.TelethonSession(s)
 	if err != nil {
@@ -21,10 +17,6 @@ func FromTelethonString(s string) (*session.Data, error) {
 	return data, nil
 }
 
-// FromTelethonSQLite читает Telethon `.session` (SQLite) файл и конвертирует его
-// в *session.Data. Файл открывается только на чтение.
-//
-// Telethon хранит адрес DC прямо в таблице sessions (server_address, port).
 func FromTelethonSQLite(path string) (*session.Data, error) {
 	db, err := openSQLiteRO(path)
 	if err != nil {

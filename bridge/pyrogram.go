@@ -9,11 +9,6 @@ import (
 	"github.com/gotd/td/session"
 )
 
-// FromPyrogramSQLite читает Pyrogram `.session` (SQLite) файл и конвертирует его
-// в *session.Data. Файл открывается только на чтение.
-//
-// Схема Pyrogram: sessions(dc_id, api_id, test_mode, auth_key, date, user_id,
-// is_bot). Адрес DC в сессии не хранится — восстанавливаем по dc_id/test_mode.
 func FromPyrogramSQLite(path string) (*session.Data, error) {
 	db, err := openSQLiteRO(path)
 	if err != nil {
@@ -41,13 +36,6 @@ func FromPyrogramSQLite(path string) (*session.Data, error) {
 	return buildData(dcID, addr, authKey)
 }
 
-// FromPyrogramString парсит Pyrogram string session. Поддержаны все три формата:
-//
-//	">BI?256sQ?" — текущий (dc_id, api_id, test_mode, auth_key, user_id, is_bot);
-//	">B?256sQ?"  — старый с 64-битным user_id;
-//	">B?256sI?"  — старый с 32-битным user_id.
-//
-// Pyrogram срезает '=' у base64 — восстанавливаем паддинг перед декодом.
 func FromPyrogramString(s string) (*session.Data, error) {
 	data, err := base64.URLEncoding.DecodeString(padBase64(s))
 	if err != nil {
@@ -60,15 +48,15 @@ func FromPyrogramString(s string) (*session.Data, error) {
 		authKey []byte
 	)
 	switch len(data) {
-	case 271: // ">BI?256sQ?" — dc_id, api_id(4), test_mode, auth_key, user_id(8), is_bot
+	case 271:
 		dcID = int(data[0])
 		test = data[5] != 0
 		authKey = data[6:262]
-	case 267: // ">B?256sQ?" — dc_id, test_mode, auth_key, user_id(8), is_bot
+	case 267:
 		dcID = int(data[0])
 		test = data[1] != 0
 		authKey = data[2:258]
-	case 263: // ">B?256sI?" — dc_id, test_mode, auth_key, user_id(4), is_bot
+	case 263:
 		dcID = int(data[0])
 		test = data[1] != 0
 		authKey = data[2:258]
@@ -83,7 +71,6 @@ func FromPyrogramString(s string) (*session.Data, error) {
 	return buildData(dcID, addr, authKey)
 }
 
-// padBase64 восстанавливает '=' паддинг, который Pyrogram срезает у строки.
 func padBase64(s string) string {
 	if m := len(s) % 4; m != 0 {
 		s += strings.Repeat("=", 4-m)

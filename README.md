@@ -1,102 +1,51 @@
 # pygotdbridge
 
-Мост, который позволяет использовать существующие сессии **Telethon** и
-**Pyrogram** через **[gotd/td](https://github.com/gotd/td)** — без повторной
-авторизации аккаунта.
+Use existing **Telethon** and **Pyrogram** sessions with [gotd/td](https://github.com/gotd/td) — no re-login required.
 
-Поддерживаемые форматы входа (детектятся автоматически):
+It converts a third-party session into a native gotd `session.Storage` that plugs straight into `telegram.Client`.
 
-| Библиотека | SQLite `.session` | String session |
-|---|---|---|
-| **Telethon** | ✅ | ✅ |
-| **Pyrogram** | ✅ | ✅ (3 формата) |
+| Library  | SQLite `.session` | String session |
+|----------|:---:|:---:|
+| Telethon | ✅ | ✅ |
+| Pyrogram | ✅ | ✅ |
 
-На выходе — готовый `session.Storage`, который напрямую втыкается в
-`telegram.Client`.
-
-## Установка
+## Install
 
 ```bash
 go get github.com/n1s01/pygotdbridge/bridge
 ```
 
-Зависимости: `github.com/gotd/td` и `modernc.org/sqlite` (чистый Go SQLite-драйвер,
-без cgo — легко кросс-компилится).
-
-## Использование
-
-Основная функция — «воркер» `StorageFromInput`: принимает сессию, возвращает
-`session.Storage` для gotd.
+## Usage
 
 ```go
 import (
-    "github.com/gotd/td/telegram"
-    "github.com/n1s01/pygotdbridge/bridge"
+	"github.com/gotd/td/telegram"
+	"github.com/n1s01/pygotdbridge/bridge"
 )
 
-// input — путь к .session файлу ЛИБО StringSession-строка (формат детектится сам).
+// input: path to a .session file or a string session (auto-detected).
 st, err := bridge.StorageFromInput(input)
 if err != nil {
-    log.Fatal(err)
+	log.Fatal(err)
 }
 
 client := telegram.NewClient(appID, appHash, telegram.Options{
-    SessionStorage: st,
-})
-
-client.Run(ctx, func(ctx context.Context) error {
-    self, err := client.Self(ctx)
-    // ... работаем аккаунтом через gotd
-    return err
+	SessionStorage: st,
 })
 ```
 
 ## API
 
-| Функция | Назначение |
-|---|---|
-| `StorageFromInput(input string) (*session.StorageMemory, error)` | Сессия → готовый `session.Storage`. Главная точка входа. |
-| `Convert(input string) (*session.Data, error)` | Авто-детект формата → `session.Data`. |
-| `FromTelethonString(s string) (*session.Data, error)` | Только Telethon StringSession. |
-| `FromTelethonSQLite(path string) (*session.Data, error)` | Только Telethon `.session` (SQLite). |
-| `FromPyrogramString(s string) (*session.Data, error)` | Только Pyrogram string session. |
-| `FromPyrogramSQLite(path string) (*session.Data, error)` | Только Pyrogram `.session` (SQLite). |
+| Function | Description |
+|----------|-------------|
+| `StorageFromInput(input string) (*session.StorageMemory, error)` | Session → ready `session.Storage`. Main entry point. |
+| `Convert(input string) (*session.Data, error)` | Auto-detect format → `session.Data`. |
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
+| `FromTelethonString` / `FromTelethonSQLite` | Telethon only. |
+| `FromPyrogramString` / `FromPyrogramSQLite` | Pyrogram only. |
 
-Всё это — пакет `bridge` (`github.com/n1s01/pygotdbridge/bridge`).
+## Notes
 
-## Структура
-
-```
-bridge/          библиотека (package bridge)
-  bridge.go        Convert, Storage-хелперы, авто-детект
-  telethon.go      парсер Telethon (SQLite + StringSession)
-  pyrogram.go      парсер Pyrogram (SQLite + string, 3 формата)
-  dc.go            таблица адресов дата-центров
-  storage.go       сборка session.Storage
-cmd/demo/        пример подключения через gotd
-```
-
-## Демо
-
-```bash
-APP_ID=123456 APP_HASH=abcdef... go run ./cmd/demo /path/to/account.session
-# или
-APP_ID=123456 APP_HASH=abcdef... go run ./cmd/demo "1BQANOTEu...строка"
-```
-
-Печатает `id / first name / username` текущего аккаунта — подтверждение, что auth
-key принят Telegram без переавторизации.
-
-## Важные нюансы
-
-- **AppID / AppHash всё равно нужны.** Auth key привязан к аккаунту и DC, а не к
-  приложению, но gotd отправляет `api_id` в `initConnection`. Рекомендуется
-  использовать те же `api_id/api_hash`, что и Telethon; технически подойдёт любая
-  валидная пара.
-- **Файл сессии открывается только на чтение** (`mode=ro&immutable=1`) — исходная
-  сессия не модифицируется.
-- **Pyrogram не хранит адрес DC** в сессии (только `dc_id`) — адрес
-  восстанавливается по фиксированной таблице продакшн/тестовых дата-центров.
-- **Salt и Config не переносятся** — gotd дотягивает их сам при первом коннекте.
-- Неавторизованная сессия (пустой/короткий `auth_key`) → внятная ошибка.
+- `app_id` / `app_hash` are still required for gotd's `initConnection` (the auth key is account-bound, not app-bound).
+- Session files are opened read-only; the source is never modified.
+- Pyrogram stores only `dc_id` (no address); it is mapped to the fixed Telegram DC IPs.
