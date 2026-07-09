@@ -2,7 +2,7 @@
 
 Use existing **Telethon** and **Pyrogram** sessions with [gotd/td](https://github.com/gotd/td) — no re-login required.
 
-It converts a third-party session into a native gotd `session.Storage` that plugs straight into `telegram.Client`.
+It converts a third-party session into a native gotd `session.Storage` that plugs straight into `telegram.Client`, and back — export a gotd session as a Telethon/Pyrogram `.session` file or string.
 
 | Library  | SQLite `.session` | String session |
 |----------|:---:|:---:|
@@ -43,6 +43,30 @@ client := telegram.NewClient(appID, appHash, telegram.Options{
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
 | `FromTelethonString` / `FromTelethonSQLite` | Telethon only. |
 | `FromPyrogramString` / `FromPyrogramSQLite` | Pyrogram only. |
+
+## Reverse conversion
+
+Export a gotd `session.Data` back to a Telethon/Pyrogram session:
+
+```go
+data, _ := bridge.Convert(input)
+
+ts, _ := bridge.ToTelethonString(data)
+_ = bridge.ToTelethonSQLite(data, "telethon.session")
+
+opts := bridge.PyrogramExport{APIID: apiID, UserID: userID}
+ps, _ := bridge.ToPyrogramString(data, opts)
+_ = bridge.ToPyrogramSQLite(data, "pyrogram.session", opts)
+```
+
+| Function | Description |
+|----------|-------------|
+| `ToTelethonString(data) (string, error)` | gotd → Telethon string session. |
+| `ToTelethonSQLite(data, path) error` | gotd → Telethon `.session` file. |
+| `ToPyrogramString(data, PyrogramExport) (string, error)` | gotd → Pyrogram string session. |
+| `ToPyrogramSQLite(data, path, PyrogramExport) error` | gotd → Pyrogram `.session` file. |
+
+`PyrogramExport` carries fields absent from `session.Data` (`APIID`, `TestMode`, `UserID`, `IsBot`). SQLite exports overwrite the target path.
 
 ## Notes
 
