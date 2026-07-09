@@ -1,4 +1,4 @@
-# telegotd
+# gotdbridge
 
 Мост, который позволяет использовать существующие **Telethon**-сессии через
 **[gotd/td](https://github.com/gotd/td)** — без повторной авторизации аккаунта.
@@ -14,7 +14,7 @@
 ## Установка
 
 ```bash
-go get github.com/n1s01/telegotd
+go get github.com/n1s01/gotdbridge
 ```
 
 Зависимости: `github.com/gotd/td` и `modernc.org/sqlite` (чистый Go SQLite-драйвер,
@@ -28,11 +28,11 @@ go get github.com/n1s01/telegotd
 ```go
 import (
     "github.com/gotd/td/telegram"
-    "github.com/n1s01/telegotd"
+    "github.com/n1s01/gotdbridge"
 )
 
 // input — путь к .session файлу ЛИБО StringSession-строка (формат детектится сам).
-st, err := telegotd.StorageFromInput(input)
+st, err := gotdbridge.StorageFromInput(input)
 if err != nil {
     log.Fatal(err)
 }

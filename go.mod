@@ -1,4 +1,4 @@
-module github.com/n1s01/telegotd
+module github.com/n1s01/gotdbridge
 
 go 1.26.2
 

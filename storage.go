@@ -1,4 +1,4 @@
-package telegotd
+package gotdbridge
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func Storage(data *session.Data) (*session.StorageMemory, error) {
 //
 // Пример:
 //
-//	st, err := telegotd.StorageFromInput(sess)
+//	st, err := gotdbridge.StorageFromInput(sess)
 //	if err != nil { ... }
 //	client := telegram.NewClient(appID, appHash, telegram.Options{SessionStorage: st})
 func StorageFromInput(input string) (*session.StorageMemory, error) {
