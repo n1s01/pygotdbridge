@@ -6,8 +6,8 @@ It converts a third-party session into a native gotd `session.Storage` that plug
 
 | Source | SQLite `.session` | String session | `tdata` folder |
 |----------|:---:|:---:|:---:|
-| Telethon | ✅ | ✅ | — |
-| Pyrogram | ✅ | ✅ | — |
+| Telethon | ✅ | ✅ | ✅ |
+| Pyrogram | ✅ | ✅ | ✅ |
 | Telegram Desktop | — | — | ✅ |
 
 ## Install
@@ -74,10 +74,28 @@ ps, _ = bridge.ToPyrogramString(data, opts)
 | `ToTelethonSQLite(data, path) error` | gotd → Telethon `.session` file. |
 | `ToPyrogramString(data, ...PyrogramExport) (string, error)` | gotd → Pyrogram string session. |
 | `ToPyrogramSQLite(data, path, ...PyrogramExport) error` | gotd → Pyrogram `.session` file. |
+| `ToTDesktopFiles(data, userID, passcode) (TDesktopFiles, error)` | gotd → tdata files, in memory. |
+| `ToTDesktop(data, userID, root, passcode) error` | gotd → tdata folder, written to `root`. |
 
 `PyrogramExport` is optional and carries fields absent from `session.Data` (`APIID`,
 `TestMode`, `UserID`, `IsBot`). Without it the session still holds a valid auth key —
 Pyrogram just needs `api_id` passed to `Client` at load time. SQLite exports overwrite the target path.
+
+`tdata` embeds the account's Telegram user ID alongside the DC/auth key, so `ToTDesktop`
+needs it as an explicit argument — pass `0` if you don't know it; Telegram Desktop will
+still connect, since the ID is only used for its own bookkeeping.
+
+`ToTDesktopFiles` returns a `TDesktopFiles` (a `map[string][]byte` of tdata-root-relative
+file names to contents) instead of writing straight to disk — `ToTDesktop` is a thin
+wrapper around it for the common "give me a folder" case. Use the raw map form to zip the
+result, ship it over the network, or otherwise decide storage yourself:
+
+```go
+files, _ := bridge.ToTDesktopFiles(data, userID, nil) // no local passcode
+for name, content := range files {
+	_ = os.WriteFile(filepath.Join(root, name), content, 0o600)
+}
+```
 
 ## Peer cache migration
 
