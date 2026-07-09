@@ -4,9 +4,13 @@
 *.exe
 *.out
 
-# Telethon session files — секреты, не коммитить
+# Сессии и креды сторонних библиотек — секреты, не коммитить
 *.session
 *.session-journal
+/session/
+
+# Локальный персональный пример (завязан на конкретный аккаунт)
+/cmd/sendself/
 
 # Go
 vendor/
