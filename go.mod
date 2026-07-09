@@ -1,4 +1,4 @@
-module github.com/n1s01/gotdbridge
+module github.com/n1s01/pygotdbridge
 
 go 1.26.2
 

@@ -1,4 +1,4 @@
-# gotdbridge
+# pygotdbridge
 
 Мост, который позволяет использовать существующие сессии **Telethon** и
 **Pyrogram** через **[gotd/td](https://github.com/gotd/td)** — без повторной
@@ -17,7 +17,7 @@
 ## Установка
 
 ```bash
-go get github.com/n1s01/gotdbridge
+go get github.com/n1s01/pygotdbridge
 ```
 
 Зависимости: `github.com/gotd/td` и `modernc.org/sqlite` (чистый Go SQLite-драйвер,
@@ -31,11 +31,11 @@ go get github.com/n1s01/gotdbridge
 ```go
 import (
     "github.com/gotd/td/telegram"
-    "github.com/n1s01/gotdbridge"
+    "github.com/n1s01/pygotdbridge"
 )
 
 // input — путь к .session файлу ЛИБО StringSession-строка (формат детектится сам).
-st, err := gotdbridge.StorageFromInput(input)
+st, err := pygotdbridge.StorageFromInput(input)
 if err != nil {
     log.Fatal(err)
 }

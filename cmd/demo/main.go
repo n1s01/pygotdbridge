@@ -16,7 +16,7 @@ import (
 
 	"github.com/gotd/td/telegram"
 
-	"github.com/n1s01/gotdbridge"
+	"github.com/n1s01/pygotdbridge"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Мост: сессия Telethon → готовый session.Storage для gotd.
-	st, err := gotdbridge.StorageFromInput(input)
+	st, err := pygotdbridge.StorageFromInput(input)
 	if err != nil {
 		log.Fatalf("convert session: %v", err)
 	}
