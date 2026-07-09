@@ -1,12 +1,15 @@
 # gotdbridge
 
-Мост, который позволяет использовать существующие **Telethon**-сессии через
-**[gotd/td](https://github.com/gotd/td)** — без повторной авторизации аккаунта.
+Мост, который позволяет использовать существующие сессии **Telethon** и
+**Pyrogram** через **[gotd/td](https://github.com/gotd/td)** — без повторной
+авторизации аккаунта.
 
-На вход даётся сессия Telethon в одном из двух форматов:
+Поддерживаемые форматы входа (детектятся автоматически):
 
-- **SQLite `.session` файл** — дефолтный формат Telethon (`SQLiteSession`);
-- **StringSession строка** — компактный текстовый формат.
+| Библиотека | SQLite `.session` | String session |
+|---|---|---|
+| **Telethon** | ✅ | ✅ |
+| **Pyrogram** | ✅ | ✅ (3 формата) |
 
 На выходе — готовый `session.Storage`, который напрямую втыкается в
 `telegram.Client`.
@@ -56,6 +59,8 @@ client.Run(ctx, func(ctx context.Context) error {
 | `Convert(input string) (*session.Data, error)` | Авто-детект формата → `session.Data`. |
 | `FromTelethonString(s string) (*session.Data, error)` | Только Telethon StringSession. |
 | `FromTelethonSQLite(path string) (*session.Data, error)` | Только Telethon `.session` (SQLite). |
+| `FromPyrogramString(s string) (*session.Data, error)` | Только Pyrogram string session. |
+| `FromPyrogramSQLite(path string) (*session.Data, error)` | Только Pyrogram `.session` (SQLite). |
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
 
 ## Демо
@@ -76,6 +81,8 @@ key принят Telegram без переавторизации.
   использовать те же `api_id/api_hash`, что и Telethon; технически подойдёт любая
   валидная пара.
 - **Файл сессии открывается только на чтение** (`mode=ro&immutable=1`) — исходная
-  сессия Telethon не модифицируется.
+  сессия не модифицируется.
+- **Pyrogram не хранит адрес DC** в сессии (только `dc_id`) — адрес
+  восстанавливается по фиксированной таблице продакшн/тестовых дата-центров.
 - **Salt и Config не переносятся** — gotd дотягивает их сам при первом коннекте.
 - Неавторизованная сессия (пустой/короткий `auth_key`) → внятная ошибка.
