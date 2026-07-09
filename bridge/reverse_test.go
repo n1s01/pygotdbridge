@@ -101,6 +101,30 @@ func TestPyrogramSQLiteRoundTrip(t *testing.T) {
 	assertSame(t, want, auto)
 }
 
+func TestPyrogramExportWithoutOpts(t *testing.T) {
+	want := testData(t)
+
+	s, err := ToPyrogramString(want)
+	if err != nil {
+		t.Fatalf("ToPyrogramString (no opts): %v", err)
+	}
+	got, err := FromPyrogramString(s)
+	if err != nil {
+		t.Fatalf("FromPyrogramString: %v", err)
+	}
+	assertSame(t, want, got)
+
+	path := filepath.Join(t.TempDir(), "pyrogram.session")
+	if err := ToPyrogramSQLite(want, path); err != nil {
+		t.Fatalf("ToPyrogramSQLite (no opts): %v", err)
+	}
+	fromFile, err := FromPyrogramSQLite(path)
+	if err != nil {
+		t.Fatalf("FromPyrogramSQLite: %v", err)
+	}
+	assertSame(t, want, fromFile)
+}
+
 func TestExportRejectsBadAuthKey(t *testing.T) {
 	bad := &session.Data{DC: 2, Addr: "149.154.167.51:443", AuthKey: []byte{1, 2, 3}}
 	if _, err := ToTelethonString(bad); err == nil {

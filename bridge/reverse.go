@@ -47,18 +47,22 @@ func ToTelethonString(data *session.Data) (string, error) {
 	return "1" + base64.URLEncoding.EncodeToString(buf), nil
 }
 
-func ToPyrogramString(data *session.Data, opts PyrogramExport) (string, error) {
+// ToPyrogramString exports data as a Pyrogram string session. opts is optional:
+// call it without opts for a session that carries no api_id/user_id (still a
+// valid auth key — Pyrogram just needs api_id passed to Client at load time).
+func ToPyrogramString(data *session.Data, opts ...PyrogramExport) (string, error) {
 	if err := validateExport(data); err != nil {
 		return "", err
 	}
+	opt := firstExport(opts)
 
 	buf := make([]byte, 0, 271)
 	buf = append(buf, byte(data.DC))
-	buf = binary.BigEndian.AppendUint32(buf, uint32(opts.APIID))
-	buf = append(buf, boolByte(opts.TestMode))
+	buf = binary.BigEndian.AppendUint32(buf, uint32(opt.APIID))
+	buf = append(buf, boolByte(opt.TestMode))
 	buf = append(buf, data.AuthKey...)
-	buf = binary.BigEndian.AppendUint64(buf, uint64(opts.UserID))
-	buf = append(buf, boolByte(opts.IsBot))
+	buf = binary.BigEndian.AppendUint64(buf, uint64(opt.UserID))
+	buf = append(buf, boolByte(opt.IsBot))
 
 	return strings.TrimRight(base64.URLEncoding.EncodeToString(buf), "="), nil
 }
@@ -90,10 +94,13 @@ func ToTelethonSQLite(data *session.Data, path string) error {
 	})
 }
 
-func ToPyrogramSQLite(data *session.Data, path string, opts PyrogramExport) error {
+// ToPyrogramSQLite exports data as a Pyrogram .session file. opts is optional;
+// see ToPyrogramString.
+func ToPyrogramSQLite(data *session.Data, path string, opts ...PyrogramExport) error {
 	if err := validateExport(data); err != nil {
 		return err
 	}
+	opt := firstExport(opts)
 
 	return writeSQLite(path, pyrogramSchema, func(db *sql.DB) error {
 		if _, err := db.Exec(`INSERT INTO version VALUES (?)`, pyrogramVersion); err != nil {
@@ -101,7 +108,7 @@ func ToPyrogramSQLite(data *session.Data, path string, opts PyrogramExport) erro
 		}
 		if _, err := db.Exec(
 			`INSERT INTO sessions VALUES (?, ?, ?, ?, ?, ?, ?)`,
-			data.DC, opts.APIID, boolInt(opts.TestMode), data.AuthKey, 0, opts.UserID, boolInt(opts.IsBot),
+			data.DC, opt.APIID, boolInt(opt.TestMode), data.AuthKey, 0, opt.UserID, boolInt(opt.IsBot),
 		); err != nil {
 			return errors.Wrap(err, "insert session")
 		}
@@ -123,6 +130,15 @@ func writeSQLite(path, schema string, seed func(*sql.DB) error) error {
 		return errors.Wrap(err, "create schema")
 	}
 	return seed(db)
+}
+
+// firstExport returns the caller-supplied options, or a zero PyrogramExport
+// (api_id/user_id = 0) when none were given.
+func firstExport(opts []PyrogramExport) PyrogramExport {
+	if len(opts) > 0 {
+		return opts[0]
+	}
+	return PyrogramExport{}
 }
 
 func validateExport(data *session.Data) error {
