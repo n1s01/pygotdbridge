@@ -17,10 +17,18 @@ const authKeyLen = 256
 const sqliteMagic = "SQLite format 3\x00"
 
 func Convert(input string) (*session.Data, error) {
+	if isDir(input) {
+		return FromTDesktop(input, nil)
+	}
 	if isSQLiteFile(input) {
 		return fromSQLiteAuto(input)
 	}
 	return fromStringAuto(input)
+}
+
+func isDir(input string) bool {
+	info, err := os.Stat(input)
+	return err == nil && info.IsDir()
 }
 
 func fromSQLiteAuto(path string) (*session.Data, error) {
