@@ -41,6 +41,7 @@ client := telegram.NewClient(appID, appHash, telegram.Options{
 |----------|-------------|
 | `StorageFromInput(input string) (*session.StorageMemory, error)` | Session → ready `session.Storage`. Main entry point. |
 | `Convert(input string) (*session.Data, error)` | Auto-detect format → `session.Data`. A directory is read as a Telegram Desktop `tdata` folder. |
+| `Detect(input string) Kind` | Report the session format without converting: `KindTelethon`, `KindPyrogram`, `KindTDesktop`, or `KindUnknown`. |
 | `FromTDesktop(root string, passcode []byte) (*session.Data, error)` | Telegram Desktop `tdata` → `session.Data` (first account). |
 | `FromTDesktopAll(root string, passcode []byte) ([]*session.Data, error)` | All accounts in a `tdata` folder. |
 | `StorageFromTDesktop(root string, passcode []byte) (*session.StorageMemory, error)` | `tdata` → ready `session.Storage`. |
