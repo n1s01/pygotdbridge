@@ -59,19 +59,25 @@ data, _ := bridge.Convert(input)
 ts, _ := bridge.ToTelethonString(data)
 _ = bridge.ToTelethonSQLite(data, "telethon.session")
 
+// PyrogramExport is optional — omit it for a session without api_id/user_id.
+ps, _ := bridge.ToPyrogramString(data)
+_ = bridge.ToPyrogramSQLite(data, "pyrogram.session")
+
+// ...or supply the extra fields Pyrogram stores:
 opts := bridge.PyrogramExport{APIID: apiID, UserID: userID}
-ps, _ := bridge.ToPyrogramString(data, opts)
-_ = bridge.ToPyrogramSQLite(data, "pyrogram.session", opts)
+ps, _ = bridge.ToPyrogramString(data, opts)
 ```
 
 | Function | Description |
 |----------|-------------|
 | `ToTelethonString(data) (string, error)` | gotd → Telethon string session. |
 | `ToTelethonSQLite(data, path) error` | gotd → Telethon `.session` file. |
-| `ToPyrogramString(data, PyrogramExport) (string, error)` | gotd → Pyrogram string session. |
-| `ToPyrogramSQLite(data, path, PyrogramExport) error` | gotd → Pyrogram `.session` file. |
+| `ToPyrogramString(data, ...PyrogramExport) (string, error)` | gotd → Pyrogram string session. |
+| `ToPyrogramSQLite(data, path, ...PyrogramExport) error` | gotd → Pyrogram `.session` file. |
 
-`PyrogramExport` carries fields absent from `session.Data` (`APIID`, `TestMode`, `UserID`, `IsBot`). SQLite exports overwrite the target path.
+`PyrogramExport` is optional and carries fields absent from `session.Data` (`APIID`,
+`TestMode`, `UserID`, `IsBot`). Without it the session still holds a valid auth key —
+Pyrogram just needs `api_id` passed to `Client` at load time. SQLite exports overwrite the target path.
 
 ## Peer cache migration
 
