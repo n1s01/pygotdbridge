@@ -1,13 +1,14 @@
 # pygotdbridge
 
-Use existing **Telethon** and **Pyrogram** sessions with [gotd/td](https://github.com/gotd/td) — no re-login required.
+Use existing **Telethon**, **Pyrogram**, and **Telegram Desktop** sessions with [gotd/td](https://github.com/gotd/td) — no re-login required.
 
 It converts a third-party session into a native gotd `session.Storage` that plugs straight into `telegram.Client`, and back — export a gotd session as a Telethon/Pyrogram `.session` file or string.
 
-| Library  | SQLite `.session` | String session |
-|----------|:---:|:---:|
-| Telethon | ✅ | ✅ |
-| Pyrogram | ✅ | ✅ |
+| Source | SQLite `.session` | String session | `tdata` folder |
+|----------|:---:|:---:|:---:|
+| Telethon | ✅ | ✅ | — |
+| Pyrogram | ✅ | ✅ | — |
+| Telegram Desktop | — | — | ✅ |
 
 ## Install
 
@@ -39,7 +40,10 @@ client := telegram.NewClient(appID, appHash, telegram.Options{
 | Function | Description |
 |----------|-------------|
 | `StorageFromInput(input string) (*session.StorageMemory, error)` | Session → ready `session.Storage`. Main entry point. |
-| `Convert(input string) (*session.Data, error)` | Auto-detect format → `session.Data`. |
+| `Convert(input string) (*session.Data, error)` | Auto-detect format → `session.Data`. A directory is read as a Telegram Desktop `tdata` folder. |
+| `FromTDesktop(root string, passcode []byte) (*session.Data, error)` | Telegram Desktop `tdata` → `session.Data` (first account). |
+| `FromTDesktopAll(root string, passcode []byte) ([]*session.Data, error)` | All accounts in a `tdata` folder. |
+| `StorageFromTDesktop(root string, passcode []byte) (*session.StorageMemory, error)` | `tdata` → ready `session.Storage`. |
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
 | `FromTelethonString` / `FromTelethonSQLite` | Telethon only. |
 | `FromPyrogramString` / `FromPyrogramSQLite` | Pyrogram only. |
