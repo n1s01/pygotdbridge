@@ -54,8 +54,8 @@ client.Run(ctx, func(ctx context.Context) error {
 |---|---|
 | `StorageFromInput(input string) (*session.StorageMemory, error)` | Сессия → готовый `session.Storage`. Главная точка входа. |
 | `Convert(input string) (*session.Data, error)` | Авто-детект формата → `session.Data`. |
-| `FromString(s string) (*session.Data, error)` | Только StringSession. |
-| `FromSQLite(path string) (*session.Data, error)` | Только `.session` (SQLite). |
+| `FromTelethonString(s string) (*session.Data, error)` | Только Telethon StringSession. |
+| `FromTelethonSQLite(path string) (*session.Data, error)` | Только Telethon `.session` (SQLite). |
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
 
 ## Демо
