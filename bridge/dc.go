@@ -1,4 +1,4 @@
-package pygotdbridge
+package bridge
 
 import (
 	"net"

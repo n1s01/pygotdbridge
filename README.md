@@ -17,7 +17,7 @@
 ## Установка
 
 ```bash
-go get github.com/n1s01/pygotdbridge
+go get github.com/n1s01/pygotdbridge/bridge
 ```
 
 Зависимости: `github.com/gotd/td` и `modernc.org/sqlite` (чистый Go SQLite-драйвер,
@@ -31,11 +31,11 @@ go get github.com/n1s01/pygotdbridge
 ```go
 import (
     "github.com/gotd/td/telegram"
-    "github.com/n1s01/pygotdbridge"
+    "github.com/n1s01/pygotdbridge/bridge"
 )
 
 // input — путь к .session файлу ЛИБО StringSession-строка (формат детектится сам).
-st, err := pygotdbridge.StorageFromInput(input)
+st, err := bridge.StorageFromInput(input)
 if err != nil {
     log.Fatal(err)
 }
@@ -62,6 +62,20 @@ client.Run(ctx, func(ctx context.Context) error {
 | `FromPyrogramString(s string) (*session.Data, error)` | Только Pyrogram string session. |
 | `FromPyrogramSQLite(path string) (*session.Data, error)` | Только Pyrogram `.session` (SQLite). |
 | `Storage(data *session.Data) (*session.StorageMemory, error)` | `session.Data` → `session.Storage`. |
+
+Всё это — пакет `bridge` (`github.com/n1s01/pygotdbridge/bridge`).
+
+## Структура
+
+```
+bridge/          библиотека (package bridge)
+  bridge.go        Convert, Storage-хелперы, авто-детект
+  telethon.go      парсер Telethon (SQLite + StringSession)
+  pyrogram.go      парсер Pyrogram (SQLite + string, 3 формата)
+  dc.go            таблица адресов дата-центров
+  storage.go       сборка session.Storage
+cmd/demo/        пример подключения через gotd
+```
 
 ## Демо
 

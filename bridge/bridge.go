@@ -1,4 +1,4 @@
-// Package pygotdbridge конвертирует существующие сессии сторонних Telegram-библиотек
+// Package bridge конвертирует существующие сессии сторонних Telegram-библиотек
 // (Telethon, Pyrogram) в нативный формат gotd (github.com/gotd/td), позволяя
 // работать аккаунтом через gotd без повторной авторизации.
 //
@@ -9,7 +9,7 @@
 //
 // Основная точка входа — StorageFromInput: на вход даётся сессия, на выход —
 // готовый session.Storage для telegram.Options{SessionStorage: ...}.
-package pygotdbridge
+package bridge
 
 import (
 	"database/sql"
