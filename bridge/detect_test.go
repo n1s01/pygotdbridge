@@ -1,6 +1,8 @@
 package bridge
 
 import (
+	"context"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -46,6 +48,29 @@ func TestDetectPyrogram(t *testing.T) {
 	}
 }
 
+func TestDetectGotd(t *testing.T) {
+	mem, err := Storage(testData(t))
+	if err != nil {
+		t.Fatalf("Storage: %v", err)
+	}
+	raw, err := mem.LoadSession(context.Background())
+	if err != nil {
+		t.Fatalf("LoadSession: %v", err)
+	}
+
+	if got := Detect(string(raw)); got != KindGotd {
+		t.Errorf("Detect(gotd inline): got %v, want %v", got, KindGotd)
+	}
+
+	path := filepath.Join(t.TempDir(), "gotd.json")
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	if got := Detect(path); got != KindGotd {
+		t.Errorf("Detect(gotd file): got %v, want %v", got, KindGotd)
+	}
+}
+
 func TestDetectUnknown(t *testing.T) {
 	cases := map[string]string{
 		"garbage string": "not-a-session",
@@ -65,6 +90,7 @@ func TestKindString(t *testing.T) {
 		KindTelethon: "telethon",
 		KindPyrogram: "pyrogram",
 		KindTDesktop: "tdesktop",
+		KindGotd:     "gotd",
 	}
 	for k, want := range cases {
 		if got := k.String(); got != want {
